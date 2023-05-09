@@ -10,6 +10,18 @@
 npm i --save @nestjs/config
 ```
 
+-   Validations
+
+```bash
+npm install --save class-validator class-transformer
+```
+
+-   OpenAPI
+
+```bash
+npm install --save @nestjs/swagger
+```
+
 ### Banco de dados
 
 -   MySQL | TypeOrm
