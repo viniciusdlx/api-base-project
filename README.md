@@ -22,6 +22,13 @@ npm install --save class-validator class-transformer
 npm install --save @nestjs/swagger
 ```
 
+-   WebSockets
+
+```bash
+npm install @nestjs/websockets @nestjs/platform-socket.io
+npm install socket.io --save
+```
+
 ### Banco de dados
 
 -   MySQL | TypeOrm

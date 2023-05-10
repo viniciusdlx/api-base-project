@@ -15,4 +15,12 @@ export class ClientGatewayPrisma implements ClientGatewayInterface {
             },
         });
     }
+
+    async findAll(): Promise<Client[]> {
+        return await this.prisma.client.findMany({
+            orderBy: {
+                id: 'desc',
+            },
+        });
+    }
 }

@@ -1,26 +1,29 @@
 import { Inject } from '@nestjs/common';
 import { Client } from '@prisma/client';
-import * as admin from 'firebase-admin';
+import { ClientGateway } from '../../infra/gateways/client-gateway';
 import { CreateClientDto } from '../../presentation/dtos/create-client.dto';
 import { ClientEntity } from '../entities/client.entity';
+import { ClientEvents } from '../events/client.events';
 import { ClientGatewayInterface } from './../../infra/gateways/client-gateway-interface';
 
 export class CreateClientUseCase {
     constructor(
         @Inject('ClientGatewayInterface')
         private readonly clientGateway: ClientGatewayInterface,
+        private readonly clientEvents: ClientEvents,
+        private readonly clientGatewayWebSocket: ClientGateway,
     ) {}
 
     async execute(createClientDto: CreateClientDto): Promise<Client> {
-        admin.initializeApp({
-            credential: admin.credential.cert({
-                projectId: 'deft-medium-365119',
-                clientEmail:
-                    'firebase-adminsdk-uq5go@deft-medium-365119.iam.gserviceaccount.com',
-                privateKey: process.env.PRIVATE_KEY,
-            }),
-            databaseURL: 'deft-medium-365119.firebaseapp.com',
-        });
+        // admin.initializeApp({
+        //     credential: admin.credential.cert({
+        //         projectId: 'deft-medium-365119',
+        //         clientEmail:
+        //             'firebase-adminsdk-uq5go@deft-medium-365119.iam.gserviceaccount.com',
+        //         privateKey: process.env.PRIVATE_KEY,
+        //     }),
+        //     databaseURL: 'deft-medium-365119.firebaseapp.com',
+        // });
 
         const newClient = await this.newClient(createClientDto);
 
@@ -28,7 +31,7 @@ export class CreateClientUseCase {
 
         const createdClient = await this.clientGateway.create(newClient);
 
-        const uid = createdClient.uuid; // ID do usuário do seu sistema
+        // const uid = createdClient.uuid; // ID do usuário do seu sistema
         // const additionalClaims = {
         //     cliente: 'SoulMed',
         //     tokens: {
@@ -41,15 +44,15 @@ export class CreateClientUseCase {
         //     },
         // };
 
-        admin.auth().createUser({
-            uid: createdClient.uuid,
-            email: 'viniciusdelimaxavier@gmail.com',
-            displayName: 'SoulMed',
-        });
+        // admin.auth().createUser({
+        //     uid: createdClient.uuid,
+        //     email: 'viniciusdelimaxavier@gmail.com',
+        //     displayName: 'SoulMed',
+        // });
 
-        const providerConfig = admin.auth().listProviderConfigs;
+        // const providerConfig = admin.auth().listProviderConfigs;
 
-        console.log('providerConfig -> ', providerConfig);
+        // console.log('providerConfig -> ', providerConfig);
         // admin.auth().getUserByProviderUid(createdClient.uuid);
 
         // admin.auth().setCustomUserClaims(createdClient.uuid, {
@@ -72,6 +75,9 @@ export class CreateClientUseCase {
         //     .createCustomToken(uid, additionalClaims);
 
         // console.log('customToken -> ', customToken);
+
+        // this.clientEvents.emit(ClientEvents.clientCreated, createdClient);
+        this.clientGatewayWebSocket.server.emit('clientCreated', createdClient);
 
         return createdClient;
     }
